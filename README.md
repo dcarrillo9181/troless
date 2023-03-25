@@ -1,23 +1,18 @@
 # Troless.com
 
-Troless.com is a video-based social media platform built with Next.js, focused on promoting optimism and positivity through user-generated content. Users can share circular selfie videos, engage in Reddit-style comment discussions, rate videos based on optimism, and participate in unique conflict resolution features. This repository contains the complete source code for the Troless.com web application.
+Troless.com is an upcoming video-based social media platform built with Next.js, focusing on promoting optimism and positivity through user-generated content. Users will be able to share circular selfie videos, engage in forum-like comment discussions, rate videos based on optimism, and participate in unique conflict resolution features. This repository will contain the complete source code for the Troless.com web application as it is developed.
 
 ## Table of Contents
 
-- Features
+- Planned Features
 - Tech Stack
-- Getting Started
-    - Prerequisites
-    - Installation
 - Usage
-- Contributing
 - License
-- Contact
 
-## Features
+## Planned Features
 
 - Circular selfie videos
-- Reddit-style comments section
+- Forum-like comments section
 - Video rating system based on optimism/positivity
 - Top-rated videos showcase
 - Conflict resolution feature with various mediation options
@@ -31,3 +26,13 @@ Troless.com is a video-based social media platform built with Next.js, focused o
 
 - **Next.js** - The React framework used for building the application
 - **Tailwind CSS** - A utility-first CSS framework for styling the user interface
+- **Firebase** - Backend services for database and authentication
+- **React Player** - A versatile video player component for React
+
+## Usage
+
+- As this is the initial stage of the project, the features mentioned in the "Planned Features" section are yet to be developed. Please refer to the project's **GitHub Issues** for the current development status and tasks.
+
+## License
+
+- MIT License.
