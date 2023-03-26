@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link';
 import { Inter } from 'next/font/google'
 import styles from './page.module.css'
 
@@ -7,29 +8,35 @@ const inter = Inter({ subsets: ['latin'] })
 export default function Home() {
   return (
     <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+      <>
+        <header className="bg-blue-500 shadow-md">
+          <nav className="container mx-auto px-6 py-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <Link href="/">
+                  <Image
+                    src="/troless_full_logo.png"
+                    alt="Troless Logo"
+                    width={300} // Adjust the width as needed
+                    height={100} // Adjust the height as needed
+                    priority // Optional, to load the logo with higher priority
+                  />
+                </Link>
+              </div>
+              <div className="hidden md:flex items-center space-x-8">
+                <a href="#" className="text-white hover:text-gray-600">Top Videos</a>
+                <a href="#" className="text-white hover:text-gray-600">Challenges</a>
+                <a href="#" className="text-white hover:text-gray-600">Conflict Resolution</a>
+              </div>
+              <div className="md:flex items-center space-x-4">
+                <input type="text" className="border-2 border-gray-300 rounded-md p-2" placeholder="Search" />
+                <button className="bg-blue-500 text-white rounded-md px-4 py-2">Sign In</button>
+                <button className="bg-gray-200 text-gray-800 rounded-md px-4 py-2">Register</button>
+              </div>
+            </div>
+          </nav>
+        </header>
+      </>
 
       <div className={styles.center}>
         <Image
@@ -43,48 +50,6 @@ export default function Home() {
         <div className={styles.thirteen}>
           <Image src="/thirteen.svg" alt="13" width={40} height={31} priority />
         </div>
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://beta.nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
       </div>
     </main>
   )
