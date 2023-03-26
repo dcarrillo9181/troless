@@ -35,4 +35,4 @@ Troless.com is an upcoming video-based social media platform built with Next.js,
 
 ## License
 
-- MIT License.
+- Distributed under the Mozilla Public License 2.0.
