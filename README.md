@@ -4,11 +4,11 @@ Troless.com is an upcoming video-based social media platform built with Next.js,
 
 ## Table of Contents
 
-- Mission Statement
-- Planned Features
-- Tech Stack
-- Usage
-- License
+- [Mission Statement](https://github.com/dcarrillo9181/troless/edit/main/README.md#mission-statement)
+- [Planned Features](https://github.com/dcarrillo9181/troless/edit/main/README.md#planned-features)
+- [Tech Stack](https://github.com/dcarrillo9181/troless/edit/main/README.md#tech-stack)
+- [Usage](https://github.com/dcarrillo9181/troless/edit/main/README.md#usage)
+- [License](https://github.com/dcarrillo9181/troless/edit/main/README.md#license)
 
 ## Mission Statement
 
