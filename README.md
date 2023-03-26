@@ -4,10 +4,15 @@ Troless.com is an upcoming video-based social media platform built with Next.js,
 
 ## Table of Contents
 
+- Mission Statement
 - Planned Features
 - Tech Stack
 - Usage
 - License
+
+## Mission Statement
+
+- **At Troless, our mission is to cultivate a vibrant online community that empowers individuals to embrace positivity, foster meaningful connections, and inspire personal growth. Through innovative challenges, uplifting content, and a focus on constructive communication, we strive to create a platform where users can engage, learn, and thrive in an atmosphere of mutual support, optimism, and shared aspirations. By emphasizing the power of positivity and promoting a collaborative spirit, Troless is dedicated to transforming social media interactions into a force for good, one optimistic post at a time.**
 
 ## Planned Features
 

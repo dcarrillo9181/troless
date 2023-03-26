@@ -2,7 +2,7 @@ import './globals.css'
 
 export const metadata = {
   title: 'Troless',
-  description: 'The Next Gen Social Media',
+  description: 'Empowering Positivity, Inspiring Connections',
 }
 
 export default function RootLayout({
