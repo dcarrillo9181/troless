@@ -19,9 +19,9 @@ const Header: React.FC = () => {
                 </Link>
               </div>
               <div className="hidden md:flex items-center space-x-8 text-xl">
-                <a href="#" className="text-white hover:text-gray-600">Top Videos</a>
-                <a href="#" className="text-white hover:text-gray-600">Challenges</a>
-                <a href="#" className="text-white hover:text-gray-600">Conflict Resolution</a>
+                <a href="./top_videos" className="text-white hover:text-gray-600">Top Videos</a>
+                <a href="./challenges" className="text-white hover:text-gray-600">Challenges</a>
+                <a href="./conflict_resolution" className="text-white hover:text-gray-600">Conflict Resolution</a>
               </div>
               <div className="md:flex items-center space-x-4">
                 <input type="text" className="border-2 border-gray-300 rounded-md p-2" placeholder="Search" />
