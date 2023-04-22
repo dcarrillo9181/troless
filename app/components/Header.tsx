@@ -25,8 +25,8 @@ const Header: React.FC = () => {
               </div>
               <div className="md:flex items-center space-x-4">
                 <input type="text" className="border-2 border-gray-300 rounded-md p-2" placeholder="Search" />
-                <button className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-md px-4 py-2">Sign In</button>
-                <button className="bg-gray-200 hover:bg-gray-300 active:bg-gray-500 text-gray-800 rounded-md px-4 py-2">Register</button>
+                <button className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-colors duration-200 text-white rounded-md px-4 py-2">Sign In</button>
+                <button className="bg-gray-200 hover:bg-gray-300 active:bg-gray-500 transition-colors duration-200 text-gray-800 rounded-md px-4 py-2">Register</button>
               </div>
             </div>
         </nav>
