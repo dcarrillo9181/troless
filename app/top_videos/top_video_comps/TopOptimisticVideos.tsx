@@ -21,7 +21,6 @@ const videos: Video[] = [
   { id: 4, title: 'Title 4', description: 'Description', url: 'https://via.placeholder.com/400x400?text=Video+4' },
   { id: 5, title: 'Title 5', description: 'Description', url: 'https://via.placeholder.com/400x400?text=Video+5' },
   { id: 6, title: 'Title 6', description: 'Description', url: 'https://via.placeholder.com/400x400?text=Video+6' },
-  // Add more video placeholders as needed
 ];
 
 const TopOptimisticVideos: React.FC = () => {
@@ -32,6 +31,8 @@ const TopOptimisticVideos: React.FC = () => {
         navigation
         pagination={{ clickable: true }}
         className="mySwiper"
+        slidesPerView={3}
+        spaceBetween={30}
       >
         {videos.map((video) => (
           <SwiperSlide key={video.id}>
