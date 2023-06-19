@@ -1,7 +1,10 @@
 import React from 'react'
+import TrendingChallenges from './trendingChallenges/TrendingChallenges'
 
 export default function Challenges() {
   return (
-    <div>Challenges Page</div>
+    <div>
+      <TrendingChallenges />
+    </div>
   )
 }
