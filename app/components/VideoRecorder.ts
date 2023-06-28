@@ -1,4 +1,4 @@
-import { MediaRecorder } from 'extendable-media-recorder';
+import { MediaRecorder, BlobEvent } from 'dom-mediacapture-record';
 import { saveAs } from 'file-saver';
 
 class VideoRecorder {
@@ -7,13 +7,13 @@ class VideoRecorder {
   private circleSize: number;
   private startMark: number = 0;
   private endMark: number = 0;
-
+  
   constructor(private videoElement: HTMLVideoElement, circleSize: number) {
     this.circleSize = circleSize;
-    this.mediaRecorder = new MediaRecorder(this.videoElement.captureStream(), {
+    this.mediaRecorder = new MediaRecorder((this.videoElement as any).captureStream(), {
       mimeType: 'video/mp4',
     });
-    this.mediaRecorder.ondataavailable = (event) => {
+    this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
       this.recordedChunks.push(event.data);
     };
   }
