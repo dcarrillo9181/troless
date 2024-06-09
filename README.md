@@ -1,6 +1,6 @@
 # Troless
 
-Troless is an upcoming video-based social media platform built with Next.js, focusing on promoting optimism and positivity through user-generated content. Users will be able to share circular selfie videos, engage in forum-like comment discussions, rate videos based on optimism, and participate in unique conflict resolution features. This repository will contain the complete source code for the Troless.com web application as it is developed.
+Troless is an upcoming video-based social media platform, focusing on promoting optimism and positivity through user-generated content. Users will be able to share circular selfie videos, engage in forum-like comment discussions, rate videos based on optimism, and participate in unique conflict resolution features. This repository will contain the complete source code for the Troless.com web application as it is developed.
 
 ## Table of Contents
 
@@ -25,11 +25,14 @@ Troless is an upcoming video-based social media platform built with Next.js, foc
 - Content moderation and reporting
 - Sentiment analysis integration
 - Gamification and rewards system
-- Mobile app development with React Native (future enhancement)
+- Mobile app development with Flutter (future enhancement)
 
 ## Tech Stack
 
-- **Firebase** - Backend services for database and authentication
+- **FlutterFlow** - Low-code development platform for rapid UI design and functionality building.
+- **Firebase** - Backend-as-a-Service (BaaS) providing real-time database (Firestore), authentication, storage, and hosting.
+- **Flutter** - UI framework for cross-platform (iOS and Android) mobile app development.
+- **Dart** - Programming language used with Flutter for app development.
 
 ## Usage
 
