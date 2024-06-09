@@ -29,10 +29,7 @@ Troless is an upcoming video-based social media platform built with Next.js, foc
 
 ## Tech Stack
 
-- **Next.js** - The React framework used for building the application
-- **Tailwind CSS** - A utility-first CSS framework for styling the user interface
 - **Firebase** - Backend services for database and authentication
-- **React Player** - A versatile video player component for React
 
 ## Usage
 
