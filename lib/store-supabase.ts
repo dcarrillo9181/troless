@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto'
 import type { User } from '@supabase/supabase-js'
-import { safeVideoName } from './records'
-import { supabaseAdmin, supabaseAuth } from './supabase'
+import { safeVideoName, videoObjectName } from './records'
+import { SUPABASE_URL, supabaseAdmin, supabaseAuth } from './supabase'
 import type { CommentRecord, Database, EncouragementRecord, ReportRecord, UserRecord, VideoRecord } from './types'
 import { HttpError } from './validators'
 
@@ -38,6 +38,10 @@ function metaOf(user: User | undefined) {
   return (user?.user_metadata ?? {}) as Record<string, unknown>
 }
 
+function named(value: unknown) {
+  return typeof value === 'string' && value.trim() ? value.trim() : ''
+}
+
 function userFromParts(profile: Row, authUser: User | undefined): UserRecord {
   const meta = metaOf(authUser)
   const handle = typeof meta.handle === 'string' && meta.handle ? meta.handle : 'member'
@@ -48,7 +52,7 @@ function userFromParts(profile: Row, authUser: User | undefined): UserRecord {
     passwordHash: googleSub ? null : 'supabase',
     passwordSalt: googleSub ? null : 'supabase',
     googleSub,
-    displayName: String(profile.name || meta.displayName || 'Member'),
+    displayName: named(profile.name) || named(meta.name) || named(meta.full_name) || named(meta.display_name) || named(meta.displayName) || 'Member',
     handle,
     bio: String(profile.bio || ''),
     hue: typeof meta.hue === 'number' ? meta.hue : Number(meta.hue || 0),
@@ -103,9 +107,11 @@ async function load(): Promise<Database> {
   ])
   const authById = new Map(authUsers.map((user) => [user.id, user]))
   const users = profiles.map((profile) => userFromParts(profile, authById.get(String(profile.id))))
-  const videoRecords: VideoRecord[] = videos.map((video) => {
-    const filename = String(video.video_url || '')
-    return {
+  const videoRecords: VideoRecord[] = videos.flatMap((video) => {
+    const status = String(video.status || 'active')
+    if (status !== 'active' && status !== 'published') return []
+    const filename = videoObjectName(String(video.video_url || ''))
+    return [{
       id: String(video.id),
       userId: String(video.user_id),
       title: String(video.caption || 'Untitled'),
@@ -113,7 +119,7 @@ async function load(): Promise<Database> {
       mime: filename.endsWith('.mp4') ? 'video/mp4' : 'video/webm',
       durationMs: Number(video.duration_seconds || 1) * 1000,
       createdAt: iso(video.created_at),
-    }
+    }]
   })
   const commentRecords: CommentRecord[] = comments
     .filter((comment) => comment.parent_id == null)
@@ -136,7 +142,7 @@ async function load(): Promise<Database> {
       reporterId: String(item.user_id),
       targetType: item.reference_type === 'comment' ? 'comment' : 'video',
       targetId: String(item.reference_id || ''),
-      reason: String(item.title || 'Violates the optimism pledge'),
+      reason: String(item.body || item.title || 'Violates the optimism pledge'),
       createdAt: iso(item.created_at),
       reviewedAt: item.read ? iso(item.created_at) : null,
     }))
@@ -165,6 +171,7 @@ async function patchProfile(user: UserRecord) {
 }
 
 function metadataFor(user: Pick<UserRecord, 'handle' | 'hue' | 'isAdmin' | 'pledgeAcceptedAt' | 'googleSub' | 'displayName'>, extra: Record<string, unknown> = {}) {
+  const name = user.displayName
   return {
     ...extra,
     handle: user.handle,
@@ -172,8 +179,15 @@ function metadataFor(user: Pick<UserRecord, 'handle' | 'hue' | 'isAdmin' | 'pled
     isAdmin: user.isAdmin,
     pledgeAcceptedAt: user.pledgeAcceptedAt,
     googleSub: user.googleSub,
-    displayName: user.displayName,
+    name,
+    full_name: name,
+    display_name: name,
+    displayName: name,
   }
+}
+
+function videoPublicUrl(filename: string) {
+  return `${SUPABASE_URL}/storage/v1/object/public/videos/${filename}`
 }
 
 export async function registerEmailUser(input: AccountInput & { password: string }) {
@@ -285,14 +299,10 @@ async function persistDiff(before: Database, after: Database) {
       .map((video) => ({
         id: video.id,
         user_id: video.userId,
-        video_url: video.filename,
+        video_url: videoPublicUrl(video.filename),
         duration_seconds: Math.max(1, Math.min(60, Math.round(video.durationMs / 1000))),
         caption: video.title,
-        positivity_impact: 0,
-        total_ratings: 0,
-        rating_sum: 0,
-        view_count: 0,
-        status: 'published',
+        status: 'active',
         created_at: video.createdAt,
         updated_at: video.createdAt,
       }))
@@ -338,8 +348,8 @@ async function persistDiff(before: Database, after: Database) {
         id: report.id,
         user_id: report.reporterId,
         type: 'report',
-        title: report.reason,
-        body: '',
+        title: report.targetType === 'comment' ? 'Comment report' : 'Video report',
+        body: report.reason,
         reference_type: report.targetType,
         reference_id: report.targetId,
         read: Boolean(report.reviewedAt),

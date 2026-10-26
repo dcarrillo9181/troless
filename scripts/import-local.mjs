@@ -38,6 +38,25 @@ function initials(name) {
   return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]?.toUpperCase() ?? '').join('') || 'TU'
 }
 
+function accountMetadata(user, extra = {}) {
+  return {
+    ...extra,
+    handle: user.handle,
+    hue: user.hue,
+    isAdmin: user.isAdmin,
+    pledgeAcceptedAt: user.pledgeAcceptedAt,
+    googleSub: user.googleSub,
+    name: user.displayName,
+    full_name: user.displayName,
+    display_name: user.displayName,
+    displayName: user.displayName,
+  }
+}
+
+function videoPublicUrl(filename) {
+  return `${url}/storage/v1/object/public/videos/${filename}`
+}
+
 const { data: listed, error: listError } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 })
 if (listError) throw listError
 const byEmail = new Map(listed.users.map((user) => [user.email?.toLowerCase(), user]))
@@ -54,29 +73,14 @@ for (const user of db.users ?? []) {
       email: user.email,
       password,
       email_confirm: true,
-      user_metadata: {
-        handle: user.handle,
-        hue: user.hue,
-        isAdmin: user.isAdmin,
-        pledgeAcceptedAt: user.pledgeAcceptedAt,
-        displayName: user.displayName,
-        googleSub: user.googleSub,
-      },
+      user_metadata: accountMetadata(user),
     })
     if (error || !data.user) throw error || new Error('createUser failed')
     authUser = data.user
     console.log('Created', user.handle)
   } else {
     const { error } = await admin.auth.admin.updateUserById(authUser.id, {
-      user_metadata: {
-        ...(authUser.user_metadata || {}),
-        handle: user.handle,
-        hue: user.hue,
-        isAdmin: user.isAdmin,
-        pledgeAcceptedAt: user.pledgeAcceptedAt,
-        displayName: user.displayName,
-        googleSub: user.googleSub,
-      },
+      user_metadata: accountMetadata(user, authUser.user_metadata || {}),
     })
     if (error) throw error
     console.log('Updated', user.handle)
@@ -109,14 +113,10 @@ for (const video of db.videos ?? []) {
   const { error } = await admin.from('videos').upsert({
     id: video.id,
     user_id: userId,
-    video_url: video.filename,
+    video_url: videoPublicUrl(video.filename),
     duration_seconds: Math.max(1, Math.min(60, Math.round(video.durationMs / 1000))),
     caption: video.title,
-    positivity_impact: 0,
-    total_ratings: 0,
-    rating_sum: 0,
-    view_count: 0,
-    status: 'published',
+    status: 'active',
     created_at: video.createdAt,
     updated_at: video.createdAt,
   }, { onConflict: 'id' })
@@ -159,8 +159,8 @@ for (const report of db.reports ?? []) {
     id: report.id,
     user_id: userId,
     type: 'report',
-    title: report.reason,
-    body: '',
+    title: report.targetType === 'comment' ? 'Comment report' : 'Video report',
+    body: report.reason,
     reference_type: report.targetType,
     reference_id: report.targetId,
     read: Boolean(report.reviewedAt),

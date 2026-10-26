@@ -45,3 +45,8 @@ export function unreviewedCount(db: Database) {
 export function safeVideoName(filename: string) {
   return /^[a-z0-9.-]+$/i.test(filename)
 }
+
+export function videoObjectName(videoUrl: string) {
+  const name = decodeURIComponent(videoUrl.split('?')[0].split('/').pop() || '')
+  return safeVideoName(name) ? name : ''
+}

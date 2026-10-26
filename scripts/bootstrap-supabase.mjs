@@ -126,9 +126,9 @@ async function importRows(client, db) {
 }
 
 async function uploadVideos(db) {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!key) {
-    console.log('Skipped video upload. Set SUPABASE_SERVICE_ROLE_KEY to copy clips into storage.')
+    console.log('Skipped video upload. Set SUPABASE_SECRET_KEY to copy clips into storage.')
     return 0
   }
   const supabase = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
@@ -178,7 +178,7 @@ if (!databaseUrl && !accessToken) {
       '- SUPABASE_DB_PASSWORD (database password from the Supabase Connect panel)\n' +
       '- DATABASE_URL (the session pooler connection string)\n' +
       '- SUPABASE_ACCESS_TOKEN (a personal access token)\n' +
-      'Also set SUPABASE_SERVICE_ROLE_KEY so the app and video upload can use the project.'
+      'Also set SUPABASE_SECRET_KEY so the app and video upload can use the project.'
   )
   process.exit(1)
 }
@@ -190,8 +190,8 @@ try {
   } else {
     await applyWithManagement(sql)
     console.log('Applied schema through the management API.')
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.log('Set SUPABASE_SERVICE_ROLE_KEY before starting the app.')
+    if (!process.env.SUPABASE_SECRET_KEY && !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.log('Set SUPABASE_SECRET_KEY before starting the app.')
       process.exit(0)
     }
   }
