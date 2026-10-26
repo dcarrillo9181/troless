@@ -15,7 +15,7 @@ export const CircularVideo = forwardRef<HTMLVideoElement, Props>(function Circul
   ref
 ) {
   return (
-    <div className={`relative aspect-square overflow-hidden rounded-full bg-[#1c1915] ${className}`}>
+    <div className={`relative aspect-square overflow-hidden rounded-full bg-ink ${className}`}>
       <video
         ref={ref}
         src={src}

@@ -25,9 +25,9 @@ export function ProfileClip({ src, title }: { src: string; title: string }) {
           }
         }}
       >
-        <CircularVideo ref={ref} src={src} muted={muted} loop className="w-full" />
+        <CircularVideo ref={ref} src={src} muted={muted} loop className="w-full lens-rest" />
       </button>
-      <figcaption className="mt-3 font-display text-2xl leading-tight">{title}</figcaption>
+      <figcaption className="mt-3 font-display text-2xl italic leading-tight">{title}</figcaption>
       <button
         type="button"
         className="mt-2 text-sm text-mist underline"

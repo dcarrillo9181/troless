@@ -16,15 +16,17 @@ export default async function ProfilePage({ params }: { params: { handle: string
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
-      <div className="flex items-start gap-4">
-        <Avatar name={user.displayName} hue={user.hue} size={72} />
-        <div>
-          <h1 className="font-display text-4xl">{user.displayName}</h1>
-          <p className="text-mist">@{user.handle}</p>
-          {viewer?.id === user.id ? <p className="mt-1 text-sm text-mist">{user.email}</p> : null}
+      <div className="rounded-[2rem] bg-blush/70 p-6 sm:p-8">
+        <div className="flex items-start gap-4">
+          <Avatar name={user.displayName} hue={user.hue} size={72} />
+          <div>
+            <h1 className="font-display text-4xl italic">{user.displayName}</h1>
+            <p className="text-mist">@{user.handle}</p>
+            {viewer?.id === user.id ? <p className="mt-1 text-sm text-mist">{user.email}</p> : null}
+          </div>
         </div>
+        <p className="mt-6 max-w-xl text-lg leading-relaxed">{user.bio}</p>
       </div>
-      <p className="mt-6 max-w-xl text-lg leading-relaxed">{user.bio}</p>
       <h2 className="mt-10 font-display text-2xl">Videos</h2>
       {videos.length === 0 ? (
         <p className="mt-3 text-mist">

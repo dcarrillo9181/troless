@@ -78,12 +78,12 @@ export function SignupSteps({ mode, endpoint, defaultName = '', lockedEmail, ini
 
   return (
     <div className="mx-auto w-full max-w-lg px-4 py-10">
-      <p className="font-display text-sm uppercase tracking-[0.18em] text-clay">Join Troless</p>
-      <h1 className="mt-2 font-display text-4xl text-ink">A short, face-to-face place for optimism.</h1>
+      <p className="font-display text-sm italic text-sun">Join troless</p>
+      <h1 className="mt-2 font-display text-4xl leading-tight text-ink">A short, face-to-face place for optimism.</h1>
       {step === 1 ? (
         <form onSubmit={continueToPledge} className="mt-8 space-y-4">
           {mode === 'email' ? (
-            <a href="/api/auth/google?from=join" className="block rounded-full border border-line bg-white px-4 py-3 text-center font-semibold">
+            <a href="/api/auth/google?from=join" className="block rounded-full border border-line bg-foam px-4 py-3 text-center font-semibold">
               Continue with Google
             </a>
           ) : null}
@@ -99,7 +99,7 @@ export function SignupSteps({ mode, endpoint, defaultName = '', lockedEmail, ini
                   required
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2 font-normal"
+                  className="field"
                 />
               </label>
               <label className="block text-sm font-semibold">
@@ -111,7 +111,7 @@ export function SignupSteps({ mode, endpoint, defaultName = '', lockedEmail, ini
                   minLength={8}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2 font-normal"
+                  className="field"
                 />
               </label>
             </>
@@ -123,7 +123,7 @@ export function SignupSteps({ mode, endpoint, defaultName = '', lockedEmail, ini
               maxLength={40}
               value={displayName}
               onChange={(event) => setDisplayName(event.target.value)}
-              className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2 font-normal"
+              className="field"
             />
           </label>
           <label className="block text-sm font-semibold">
@@ -133,7 +133,7 @@ export function SignupSteps({ mode, endpoint, defaultName = '', lockedEmail, ini
               maxLength={20}
               value={handle}
               onChange={(event) => setHandle(event.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-              className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2 font-normal"
+              className="field"
               placeholder="yourname"
             />
           </label>
@@ -145,18 +145,18 @@ export function SignupSteps({ mode, endpoint, defaultName = '', lockedEmail, ini
               value={bio}
               onChange={(event) => setBio(event.target.value)}
               rows={3}
-              className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2 font-normal"
+              className="field"
               placeholder="A walk after dinner, my sister's laugh, fixing something that was broken."
             />
           </label>
-          {message ? <p className="text-sm text-clay">{message}</p> : null}
-          <button type="submit" className="w-full rounded-full bg-tide px-4 py-3 font-semibold text-paper">
+          {message ? <p className="text-sm text-berry">{message}</p> : null}
+          <button type="submit" className="w-full rounded-full bg-sun px-4 py-3 font-semibold text-white">
             Continue to the pledge
           </button>
         </form>
       ) : (
-        <form onSubmit={createAccount} className="mt-8 rounded-3xl border border-line bg-foam p-6">
-          <h2 className="font-display text-3xl">Pledge of Optimism</h2>
+        <form onSubmit={createAccount} className="mt-8 rounded-[2rem] bg-blush p-6 shadow-[0_16px_40px_rgba(255,106,44,0.08)]">
+          <h2 className="font-display text-4xl italic">Pledge of Optimism</h2>
           <p className="mt-4 text-lg leading-relaxed">
             I promise that everything I post will be constructive, encouraging, or solution-focused. I will not use this place to tear people down.
           </p>
@@ -169,12 +169,12 @@ export function SignupSteps({ mode, endpoint, defaultName = '', lockedEmail, ini
             />
             <span>I make this pledge.</span>
           </label>
-          {message ? <p className="mt-4 text-sm text-clay">{message}</p> : null}
+          {message ? <p className="mt-4 text-sm text-berry">{message}</p> : null}
           <div className="mt-6 flex gap-3">
             <button type="button" onClick={() => setStep(1)} className="rounded-full border border-line px-4 py-3">
               Back
             </button>
-            <button type="submit" disabled={pending || !pledge} className="flex-1 rounded-full bg-clay px-4 py-3 font-semibold text-white disabled:opacity-50">
+            <button type="submit" disabled={pending || !pledge} className="flex-1 rounded-full bg-sun px-4 py-3 font-semibold text-white disabled:opacity-50">
               {pending ? 'Creating account…' : 'Create my account'}
             </button>
           </div>

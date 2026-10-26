@@ -26,7 +26,7 @@ const videos: Video[] = [
 const TopOptimisticVideos: React.FC = () => {
   return (
     <div className="container mx-auto px-12 py-8">
-      <h1 className="text-center font-bold mb-10">Top Optimistic Videos</h1>
+      <h1 className="mb-10 text-center font-display text-4xl italic">Top Optimistic Videos</h1>
       <Swiper
         navigation
         pagination={{ clickable: true }}

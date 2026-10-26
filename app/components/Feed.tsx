@@ -64,9 +64,9 @@ export function Feed({ initialVideos, signedIn }: { initialVideos: FeedVideo[]; 
   if (videos.length === 0) {
     return (
       <div className="mx-auto flex min-h-[calc(100svh-4.5rem)] max-w-lg flex-col items-center justify-center px-6 text-center">
-        <h1 className="font-display text-4xl">Nothing here yet.</h1>
+        <h1 className="font-display text-4xl italic">Nothing here yet.</h1>
         <p className="mt-3 text-lg text-mist">Record a circular selfie about something that gave you optimism.</p>
-        <Link href={signedIn ? '/record' : '/join'} className="mt-6 rounded-full bg-clay px-5 py-3 font-semibold text-white">
+        <Link href={signedIn ? '/record' : '/join'} className="mt-6 rounded-full bg-sun px-5 py-3 font-semibold text-white">
           {signedIn ? 'Record a video' : 'Join and record'}
         </Link>
       </div>
@@ -171,9 +171,9 @@ function VideoCard({
           videoId={video.id}
           muted={!sound}
           loop
-          className="w-full ring-4 ring-white"
+          className="w-full lens-rest"
         >
-          <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/65 px-3 py-1 text-sm text-white">
+          <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-ink/75 px-3 py-1 text-sm text-white">
             {active ? (sound ? 'Mute' : 'Tap for sound') : 'Sound'}
           </span>
         </CircularVideo>
@@ -186,13 +186,13 @@ function VideoCard({
             <span className="block text-sm text-mist">@{video.author.handle}</span>
           </span>
         </Link>
-        <h2 className="mt-4 font-display text-3xl leading-tight">{video.title}</h2>
+        <h2 className="mt-4 font-display text-3xl italic leading-tight">{video.title}</h2>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={encourage}
             disabled={busy || video.encouraged}
-            className="rounded-full bg-tide px-4 py-2 font-semibold text-paper disabled:opacity-70"
+            className="rounded-full bg-grove px-4 py-2 font-semibold text-white disabled:opacity-70"
           >
             {video.encouraged ? 'Encouraged' : 'Encourage'}
           </button>
@@ -249,10 +249,10 @@ function VideoCard({
                   maxLength={280}
                   rows={3}
                   onChange={(event) => setComment(event.target.value)}
-                  className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2 font-normal"
+                  className="field"
                 />
               </label>
-              <button type="submit" className="mt-2 rounded-full border border-line bg-white px-4 py-2 font-semibold">
+              <button type="submit" className="mt-2 rounded-full border border-line bg-foam px-4 py-2 font-semibold">
                 Post
               </button>
             </form>
@@ -261,7 +261,7 @@ function VideoCard({
               <Link href="/login?next=/" className="font-semibold underline">Sign in</Link> to leave encouragement.
             </p>
           )}
-          {commentError ? <p className="mt-2 text-sm text-clay">{commentError}</p> : null}
+          {commentError ? <p className="mt-2 text-sm text-berry">{commentError}</p> : null}
         </section>
       </div>
     </article>
@@ -301,11 +301,11 @@ function ReportForm({
           maxLength={280}
           rows={2}
           onChange={(event) => onNote(event.target.value)}
-          className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2"
+          className="field"
           placeholder="Optional. An administrator is alerted either way."
         />
       </label>
-      <button type="submit" className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-paper">
+      <button type="submit" className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white">
         Alert an administrator
       </button>
     </form>

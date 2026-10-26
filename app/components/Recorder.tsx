@@ -178,36 +178,36 @@ export function Recorder({ displayName }: { displayName: string }) {
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col items-center px-4 py-8">
       <p className="text-sm text-mist">Posting as {displayName}</p>
-      <h1 className="mt-1 text-center font-display text-4xl">Look into the lens.</h1>
+      <h1 className="mt-1 text-center font-display text-4xl italic">Look into the lens.</h1>
       <p className="mt-2 max-w-md text-center text-mist">The frame stays circular, and the clip stops at {MAX_VIDEO_SECONDS} seconds.</p>
 
       <div className="mt-6 w-[min(78vw,420px)]">
         {phase === 'review' && clipUrl ? (
-          <CircularVideo ref={playbackRef} src={clipUrl} className="w-full ring-4 ring-white" />
+          <CircularVideo ref={playbackRef} src={clipUrl} className="w-full lens-rest" />
         ) : (
-          <CircularVideo ref={previewRef} mirror className="w-full ring-4 ring-white" />
+          <CircularVideo ref={previewRef} mirror className={`w-full ${phase === 'recording' ? 'lens-live' : 'lens-rest'}`} />
         )}
       </div>
       <p className="mt-4 font-display text-2xl tabular-nums">
         {clock(elapsed)} <span className="text-base text-mist">/ {clock(MAX_VIDEO_SECONDS * 1000)}</span>
       </p>
-      {phase === 'recording' ? <p className="text-sm text-clay">Recording. It will stop at the limit.</p> : null}
+      {phase === 'recording' ? <p className="text-sm font-semibold text-sun">Recording. It will stop at the limit.</p> : null}
       {phase === 'review' ? <p className="text-sm text-mist">This is what others will see.</p> : null}
-      {message ? <p className="mt-3 max-w-md text-center text-sm text-clay">{message}</p> : null}
+      {message ? <p className="mt-3 max-w-md text-center text-sm text-berry">{message}</p> : null}
 
       <div className="mt-5 flex w-full max-w-md flex-col gap-3">
         {phase === 'ready' && !cameraOn ? (
-          <button type="button" onClick={openCamera} className="rounded-full bg-tide px-4 py-3 font-semibold text-paper">
+          <button type="button" onClick={openCamera} className="rounded-full bg-sun px-4 py-3 font-semibold text-white">
             Use camera
           </button>
         ) : null}
         {phase === 'ready' && cameraOn ? (
-          <button type="button" onClick={startRecording} className="rounded-full bg-clay px-4 py-3 font-semibold text-white">
+          <button type="button" onClick={startRecording} className="rounded-full bg-sun px-4 py-3 font-semibold text-white">
             Record
           </button>
         ) : null}
         {phase === 'recording' ? (
-          <button type="button" onClick={finishRecording} className="rounded-full bg-ink px-4 py-3 font-semibold text-paper">
+          <button type="button" onClick={finishRecording} className="rounded-full bg-ink px-4 py-3 font-semibold text-white">
             Stop
           </button>
         ) : null}
@@ -223,7 +223,7 @@ export function Recorder({ displayName }: { displayName: string }) {
                   element.play().catch(() => undefined)
                 } else element.pause()
               }}
-              className="rounded-full border border-line bg-white px-4 py-3 font-semibold"
+              className="rounded-full border border-line bg-foam px-4 py-3 font-semibold"
             >
               Play back
             </button>
@@ -234,10 +234,10 @@ export function Recorder({ displayName }: { displayName: string }) {
                 maxLength={80}
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder="Something that made me smile today"
-                className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2 font-normal"
+                className="field"
               />
             </label>
-            <button type="button" onClick={publish} disabled={publishing} className="rounded-full bg-clay px-4 py-3 font-semibold text-white disabled:opacity-50">
+            <button type="button" onClick={publish} disabled={publishing} className="rounded-full bg-sun px-4 py-3 font-semibold text-white disabled:opacity-50">
               {publishing ? 'Publishing…' : 'Publish'}
             </button>
             <button type="button" onClick={retake} className="rounded-full border border-line px-4 py-3">

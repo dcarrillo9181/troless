@@ -1,3 +1,56 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  background:
+    radial-gradient(820px 380px at 0% -8%, #ffe0c8 0%, transparent 60%),
+    radial-gradient(640px 320px at 100% 0%, #ffe8c2 0%, transparent 55%),
+    #fff4e8;
+  color: #2c211c;
+}
+
+::selection {
+  background: #ff6a2c;
+  color: #fffaf5;
+}
+
+:focus-visible {
+  outline: 2px solid #ff6a2c;
+  outline-offset: 2px;
+}
+
+.field {
+  margin-top: 0.3rem;
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid #f0d2bf;
+  background: #fffaf5;
+  padding: 0.65rem 0.85rem;
+  font-weight: 400;
+  color: #2c211c;
+}
+
+.field:focus {
+  border-color: #ff6a2c;
+  outline: 2px solid rgba(255, 106, 44, 0.35);
+  outline-offset: 1px;
+}
+
+.lens-rest {
+  box-shadow: 0 0 0 7px #ffe4d2, 0 16px 40px rgba(255, 106, 44, 0.14);
+}
+
+.lens-live {
+  animation: lens-pulse 1.15s ease-in-out infinite;
+}
+
+@keyframes lens-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 6px #ff6a2c, 0 0 0 12px rgba(255, 106, 44, 0.22);
+  }
+  50% {
+    box-shadow: 0 0 0 8px #ff6a2c, 0 0 0 20px rgba(255, 106, 44, 0.08);
+  }
+}

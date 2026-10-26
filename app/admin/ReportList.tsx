@@ -26,7 +26,7 @@ export function ReportList({ initialReports }: { initialReports: AdminReport[] }
   return (
     <ul className="mt-6 space-y-4">
       {reports.map((report) => (
-        <li key={report.id} className="rounded-2xl border border-line bg-foam p-4">
+        <li key={report.id} className="rounded-[1.5rem] border border-line bg-foam p-5">
           <p className="text-sm text-mist">
             {report.targetType === 'video' ? 'Video' : 'Comment'} · {new Date(report.createdAt).toLocaleString()} · reported by {report.reporter.displayName}
           </p>
@@ -39,14 +39,14 @@ export function ReportList({ initialReports }: { initialReports: AdminReport[] }
             {report.reviewedAt ? (
               <span className="text-sm text-mist">Reviewed</span>
             ) : (
-              <button type="button" onClick={() => review(report.id)} className="rounded-full bg-tide px-3 py-1.5 text-sm font-semibold text-paper">
+              <button type="button" onClick={() => review(report.id)} className="rounded-full bg-grove px-3 py-1.5 text-sm font-semibold text-white">
                 Mark reviewed
               </button>
             )}
           </div>
         </li>
       ))}
-      {message ? <p className="text-sm text-clay">{message}</p> : null}
+      {message ? <p className="text-sm text-berry">{message}</p> : null}
     </ul>
   )
 }

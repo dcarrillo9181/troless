@@ -30,9 +30,10 @@ export function LoginForm({ initialError = '', next = '/' }: { initialError?: st
 
   return (
     <div className="mx-auto w-full max-w-lg px-4 py-10">
-      <h1 className="font-display text-4xl">Sign in</h1>
+      <p className="font-display text-sm italic text-sun">Welcome back</p>
+      <h1 className="mt-2 font-display text-4xl italic">Sign in</h1>
       <p className="mt-2 text-mist">Come back to record, watch, and encourage.</p>
-      <a href="/api/auth/google?from=login" className="mt-8 block rounded-full border border-line bg-white px-4 py-3 text-center font-semibold">
+      <a href="/api/auth/google?from=login" className="mt-8 block rounded-full border border-line bg-foam px-4 py-3 text-center font-semibold">
         Continue with Google
       </a>
       <form onSubmit={submit} className="mt-6 space-y-4">
@@ -44,7 +45,7 @@ export function LoginForm({ initialError = '', next = '/' }: { initialError?: st
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2 font-normal"
+            className="field"
           />
         </label>
         <label className="block text-sm font-semibold">
@@ -55,11 +56,11 @@ export function LoginForm({ initialError = '', next = '/' }: { initialError?: st
             required
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2 font-normal"
+            className="field"
           />
         </label>
-        {message ? <p className="text-sm text-clay">{message}</p> : null}
-        <button type="submit" disabled={pending} className="w-full rounded-full bg-tide px-4 py-3 font-semibold text-paper disabled:opacity-50">
+        {message ? <p className="text-sm text-berry">{message}</p> : null}
+        <button type="submit" disabled={pending} className="w-full rounded-full bg-sun px-4 py-3 font-semibold text-white disabled:opacity-50">
           {pending ? 'Signing in…' : 'Sign in'}
         </button>
       </form>
