@@ -63,7 +63,7 @@ export function Feed({ initialVideos, signedIn }: { initialVideos: FeedVideo[]; 
 
   if (videos.length === 0) {
     return (
-      <div className="mx-auto flex min-h-[calc(100svh-4.5rem)] max-w-lg flex-col items-center justify-center px-6 text-center">
+      <div className="mx-auto flex h-full min-h-[24rem] max-w-lg flex-col items-center justify-center px-6 text-center">
         <h1 className="font-display text-4xl italic">Nothing here yet.</h1>
         <p className="mt-3 text-lg text-mist">Record a circular selfie about something that gave you optimism.</p>
         <Link href={signedIn ? '/record' : '/join'} className="mt-6 rounded-full bg-sun px-5 py-3 font-semibold text-white">
@@ -74,7 +74,7 @@ export function Feed({ initialVideos, signedIn }: { initialVideos: FeedVideo[]; 
   }
 
   return (
-    <div ref={scroller} className="h-[calc(100svh-4.5rem)] snap-y snap-mandatory overflow-y-auto">
+    <div ref={scroller} className="h-full snap-y snap-mandatory overflow-y-auto">
       {videos.map((video) => (
         <VideoCard
           key={video.id}

@@ -28,9 +28,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const alerts = user?.isAdmin ? unreviewedCount(await readDb()) : 0
   return (
     <html lang="en">
-      <body className={`${sans.variable} ${display.variable} min-h-screen font-sans text-ink antialiased`}>
+      <body className={`${sans.variable} ${display.variable} flex h-[100svh] flex-col overflow-hidden font-sans text-ink antialiased`}>
         <Header user={user} alerts={alerts} />
-        <main>{children}</main>
+        <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
       </body>
     </html>
   )

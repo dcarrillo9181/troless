@@ -1,11 +1,9 @@
 'use client';
 
 import React from 'react';
-import SwiperCore, { Navigation, Pagination } from 'swiper';
+import { Navigation, Pagination } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/swiper-bundle.min.css';
-
-SwiperCore.use([Navigation, Pagination]);
 
 interface Video {
   id: number;
@@ -28,6 +26,7 @@ const TrendingChallenges: React.FC = () => {
     <div className="container mx-auto px-12 py-8">
       <h1 className="mb-10 text-center font-display text-4xl italic">Trending Challenges</h1>
       <Swiper
+        modules={[Navigation, Pagination]}
         navigation
         pagination={{ clickable: true }}
         className="mySwiper"

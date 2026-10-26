@@ -219,6 +219,7 @@ export async function registerEmailUser(input: AccountInput & { password: string
   record.id = data.user.id
   record.createdAt = data.user.created_at || pledgeAcceptedAt
   await patchProfile(record)
+  invalidateDbCache()
   return record
 }
 
@@ -252,6 +253,7 @@ export async function registerGoogleUser(input: AccountInput & { googleSub: stri
   record.id = data.user.id
   record.createdAt = data.user.created_at || pledgeAcceptedAt
   await patchProfile(record)
+  invalidateDbCache()
   return record
 }
 
@@ -364,6 +366,15 @@ async function persistDiff(before: Database, after: Database) {
   }
 }
 
+let cached: { at: number; generation: number; db: Database } | null = null
+let generation = 0
+const CACHE_MS = 3000
+
+export function invalidateDbCache() {
+  generation += 1
+  cached = null
+}
+
 let chain: Promise<unknown> = Promise.resolve()
 
 function withLock<T>(fn: () => Promise<T>): Promise<T> {
@@ -376,7 +387,14 @@ function withLock<T>(fn: () => Promise<T>): Promise<T> {
 }
 
 export function readDb() {
-  return withLock(() => load())
+  return withLock(async () => {
+    const now = Date.now()
+    if (cached && cached.generation === generation && now - cached.at < CACHE_MS) return structuredClone(cached.db)
+    const seen = generation
+    const db = await load()
+    if (seen === generation) cached = { at: Date.now(), generation: seen, db }
+    return structuredClone(db)
+  })
 }
 
 export function update<T>(fn: (db: Database) => T) {
@@ -385,6 +403,7 @@ export function update<T>(fn: (db: Database) => T) {
     const db = structuredClone(before)
     const result = fn(db)
     await persistDiff(before, db)
+    invalidateDbCache()
     return result
   })
 }

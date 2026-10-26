@@ -24,11 +24,50 @@ export function supabaseAdmin() {
   return admin
 }
 
+export function publishableKey() {
+  return process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || ''
+}
+
+type AuthStorage = {
+  getItem: (key: string) => string | null
+  setItem: (key: string, value: string) => void
+  removeItem: (key: string) => void
+}
+
+export function memoryAuthStorage(initial: Record<string, string> = {}) {
+  const data = { ...initial }
+  return {
+    getItem: (key: string) => (key in data ? data[key] : null),
+    setItem: (key: string, value: string) => {
+      data[key] = value
+    },
+    removeItem: (key: string) => {
+      delete data[key]
+    },
+    snapshot: () => ({ ...data }),
+  }
+}
+
 export function supabaseAuth() {
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || ''
+  const key = publishableKey()
   if (!key) throw new Error('SUPABASE_PUBLISHABLE_KEY is not set')
   return createClient(SUPABASE_URL, key, {
     auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { 'User-Agent': 'troless-server' } },
+  })
+}
+
+export function supabaseAuthWith(storage: AuthStorage) {
+  const key = publishableKey()
+  if (!key) throw new Error('SUPABASE_PUBLISHABLE_KEY is not set')
+  return createClient(SUPABASE_URL, key, {
+    auth: {
+      flowType: 'pkce',
+      persistSession: true,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+      storage,
+    },
     global: { headers: { 'User-Agent': 'troless-server' } },
   })
 }
