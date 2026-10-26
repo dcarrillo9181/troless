@@ -1,5 +1,7 @@
+import { randomUUID } from 'crypto'
+import type { User } from '@supabase/supabase-js'
 import { safeVideoName } from './records'
-import { supabaseAdmin } from './supabase'
+import { supabaseAdmin, supabaseAuth } from './supabase'
 import type { CommentRecord, Database, EncouragementRecord, ReportRecord, UserRecord, VideoRecord } from './types'
 import { HttpError } from './validators'
 
@@ -7,145 +9,272 @@ const BUCKET = 'videos'
 const PAGE = 1000
 
 type Row = Record<string, unknown>
+type AccountInput = {
+  email: string
+  displayName: string
+  handle: string
+  bio: string
+  hue: number
+  isAdmin?: boolean
+}
 
 function iso(value: unknown) {
-  if (typeof value !== 'string' && !(value instanceof Date)) return ''
+  if (typeof value !== 'string' && !(value instanceof Date)) return new Date().toISOString()
   const date = new Date(value)
   return Number.isNaN(date.getTime()) ? String(value) : date.toISOString()
 }
 
-function userFromRow(row: Row): UserRecord {
-  return {
-    id: String(row.id),
-    email: String(row.email),
-    passwordHash: row.password_hash == null ? null : String(row.password_hash),
-    passwordSalt: row.password_salt == null ? null : String(row.password_salt),
-    googleSub: row.google_sub == null ? null : String(row.google_sub),
-    displayName: String(row.display_name),
-    handle: String(row.handle),
-    bio: String(row.bio),
-    hue: Number(row.hue),
-    pledgeAcceptedAt: iso(row.pledge_accepted_at),
-    isAdmin: Boolean(row.is_admin),
-    createdAt: iso(row.created_at),
-  }
+function initials(name: string) {
+  const letters = name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('')
+  return letters || 'TU'
 }
 
-function videoFromRow(row: Row): VideoRecord {
-  return {
-    id: String(row.id),
-    userId: String(row.user_id),
-    title: String(row.title),
-    filename: String(row.filename),
-    mime: String(row.mime),
-    durationMs: Number(row.duration_ms),
-    createdAt: iso(row.created_at),
-  }
+function metaOf(user: User | undefined) {
+  return (user?.user_metadata ?? {}) as Record<string, unknown>
 }
 
-function encouragementFromRow(row: Row): EncouragementRecord {
+function userFromParts(profile: Row, authUser: User | undefined): UserRecord {
+  const meta = metaOf(authUser)
+  const handle = typeof meta.handle === 'string' && meta.handle ? meta.handle : 'member'
+  const googleSub = typeof meta.googleSub === 'string' ? meta.googleSub : null
   return {
-    userId: String(row.user_id),
-    videoId: String(row.video_id),
-    createdAt: iso(row.created_at),
-  }
-}
-
-function commentFromRow(row: Row): CommentRecord {
-  return {
-    id: String(row.id),
-    videoId: String(row.video_id),
-    userId: String(row.user_id),
-    body: String(row.body),
-    createdAt: iso(row.created_at),
-  }
-}
-
-function reportFromRow(row: Row): ReportRecord {
-  return {
-    id: String(row.id),
-    reporterId: String(row.reporter_id),
-    targetType: row.target_type === 'comment' ? 'comment' : 'video',
-    targetId: String(row.target_id),
-    reason: String(row.reason),
-    createdAt: iso(row.created_at),
-    reviewedAt: row.reviewed_at == null ? null : iso(row.reviewed_at),
-  }
-}
-
-function userToRow(user: UserRecord) {
-  return {
-    id: user.id,
-    email: user.email,
-    password_hash: user.passwordHash,
-    password_salt: user.passwordSalt,
-    google_sub: user.googleSub,
-    display_name: user.displayName,
-    handle: user.handle,
-    bio: user.bio,
-    hue: user.hue,
-    pledge_accepted_at: user.pledgeAcceptedAt,
-    is_admin: user.isAdmin,
-    created_at: user.createdAt,
+    id: String(profile.id),
+    email: String(profile.email || authUser?.email || ''),
+    passwordHash: googleSub ? null : 'supabase',
+    passwordSalt: googleSub ? null : 'supabase',
+    googleSub,
+    displayName: String(profile.name || meta.displayName || 'Member'),
+    handle,
+    bio: String(profile.bio || ''),
+    hue: typeof meta.hue === 'number' ? meta.hue : Number(meta.hue || 0),
+    pledgeAcceptedAt: typeof meta.pledgeAcceptedAt === 'string' ? meta.pledgeAcceptedAt : iso(profile.created_at),
+    isAdmin: meta.isAdmin === true,
+    createdAt: iso(profile.created_at),
   }
 }
 
 function fail(error: { code?: string; message?: string }): never {
   const message = (error.message || '').replace(/Key \([^)]*\)=\([^)]*\)/g, 'Key=(redacted)')
   console.error('supabase', error.code || 'error', message)
-  if (error.code === '42P01' || error.code === 'PGRST205' || /relation .* does not exist|schema cache/i.test(message)) {
-    throw new HttpError(500, 'The database is not set up yet.')
+  if (/already registered|already exists|duplicate/i.test(message) && /email|user/i.test(message)) {
+    throw new HttpError(409, 'An account with that email already exists.')
   }
-  if (error.code === '23505') {
-    if (/email/i.test(message)) throw new HttpError(409, 'An account with that email already exists.')
-    if (/handle/i.test(message)) throw new HttpError(409, 'That handle is taken.')
-    if (/google/i.test(message)) throw new HttpError(409, 'That Google account is already on Troless. Sign in instead.')
-    if (/users_single_admin/i.test(message)) throw new HttpError(409, 'Could not create the account. Try again.')
-  }
+  if (error.code === '23505' && /email/i.test(message)) throw new HttpError(409, 'An account with that email already exists.')
+  if (error.code === '23505' && /handle/i.test(message)) throw new HttpError(409, 'That handle is taken.')
   throw new HttpError(500, 'The database could not save that.')
 }
 
-async function fetchAll<T>(table: string, map: (row: Row) => T) {
-  const rows: T[] = []
+async function fetchAll(table: string) {
+  const rows: Row[] = []
   for (let from = 0; ; from += PAGE) {
     const { data, error } = await supabaseAdmin().from(table).select('*').range(from, from + PAGE - 1)
     if (error) fail(error)
     const batch = (data ?? []) as Row[]
-    rows.push(...batch.map(map))
+    rows.push(...batch)
     if (batch.length < PAGE) break
   }
   return rows
 }
 
+async function listAuthUsers() {
+  const users: User[] = []
+  for (let page = 1; page < 20; page += 1) {
+    const { data, error } = await supabaseAdmin().auth.admin.listUsers({ page, perPage: 200 })
+    if (error) fail(error)
+    users.push(...data.users)
+    if (data.users.length < 200) break
+  }
+  return users
+}
+
 async function load(): Promise<Database> {
-  const [users, videos, encouragements, comments, reports] = await Promise.all([
-    fetchAll('users', userFromRow),
-    fetchAll('videos', videoFromRow),
-    fetchAll('encouragements', encouragementFromRow),
-    fetchAll('comments', commentFromRow),
-    fetchAll('reports', reportFromRow),
+  const [profiles, authUsers, videos, comments, ratings, notifications] = await Promise.all([
+    fetchAll('profiles'),
+    listAuthUsers(),
+    fetchAll('videos'),
+    fetchAll('comments'),
+    fetchAll('video_ratings'),
+    fetchAll('notifications'),
   ])
-  return { users, videos, encouragements, comments, reports }
+  const authById = new Map(authUsers.map((user) => [user.id, user]))
+  const users = profiles.map((profile) => userFromParts(profile, authById.get(String(profile.id))))
+  const videoRecords: VideoRecord[] = videos.map((video) => {
+    const filename = String(video.video_url || '')
+    return {
+      id: String(video.id),
+      userId: String(video.user_id),
+      title: String(video.caption || 'Untitled'),
+      filename,
+      mime: filename.endsWith('.mp4') ? 'video/mp4' : 'video/webm',
+      durationMs: Number(video.duration_seconds || 1) * 1000,
+      createdAt: iso(video.created_at),
+    }
+  })
+  const commentRecords: CommentRecord[] = comments
+    .filter((comment) => comment.parent_id == null)
+    .map((comment) => ({
+      id: String(comment.id),
+      videoId: String(comment.video_id),
+      userId: String(comment.user_id),
+      body: String(comment.body || ''),
+      createdAt: iso(comment.created_at),
+    }))
+  const encouragements: EncouragementRecord[] = ratings.map((rating) => ({
+    userId: String(rating.user_id),
+    videoId: String(rating.video_id),
+    createdAt: iso(rating.created_at),
+  }))
+  const reports: ReportRecord[] = notifications
+    .filter((item) => item.type === 'report')
+    .map((item) => ({
+      id: String(item.id),
+      reporterId: String(item.user_id),
+      targetType: item.reference_type === 'comment' ? 'comment' : 'video',
+      targetId: String(item.reference_id || ''),
+      reason: String(item.title || 'Violates the optimism pledge'),
+      createdAt: iso(item.created_at),
+      reviewedAt: item.read ? iso(item.created_at) : null,
+    }))
+  return { users, videos: videoRecords, encouragements, comments: commentRecords, reports }
+}
+
+async function patchProfile(user: UserRecord) {
+  const now = new Date().toISOString()
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const { data, error } = await supabaseAdmin()
+      .from('profiles')
+      .update({
+        name: user.displayName,
+        avatar_initials: initials(user.displayName),
+        email: user.email,
+        bio: user.bio,
+        updated_at: now,
+      })
+      .eq('id', user.id)
+      .select('id')
+    if (error) fail(error)
+    if (data && data.length > 0) return
+    await new Promise((resolve) => setTimeout(resolve, 150))
+  }
+  throw new HttpError(500, 'The profile was not ready.')
+}
+
+function metadataFor(user: Pick<UserRecord, 'handle' | 'hue' | 'isAdmin' | 'pledgeAcceptedAt' | 'googleSub' | 'displayName'>, extra: Record<string, unknown> = {}) {
+  return {
+    ...extra,
+    handle: user.handle,
+    hue: user.hue,
+    isAdmin: user.isAdmin,
+    pledgeAcceptedAt: user.pledgeAcceptedAt,
+    googleSub: user.googleSub,
+    displayName: user.displayName,
+  }
+}
+
+export async function registerEmailUser(input: AccountInput & { password: string }) {
+  const db = await load()
+  if (db.users.some((user) => user.email === input.email)) throw new HttpError(409, 'An account with that email already exists.')
+  if (db.users.some((user) => user.handle === input.handle)) throw new HttpError(409, 'That handle is taken.')
+  const pledgeAcceptedAt = new Date().toISOString()
+  const record: UserRecord = {
+    id: '',
+    email: input.email,
+    passwordHash: 'supabase',
+    passwordSalt: 'supabase',
+    googleSub: null,
+    displayName: input.displayName,
+    handle: input.handle,
+    bio: input.bio,
+    hue: input.hue,
+    pledgeAcceptedAt,
+    isAdmin: input.isAdmin ?? db.users.length === 0,
+    createdAt: pledgeAcceptedAt,
+  }
+  const { data, error } = await supabaseAdmin().auth.admin.createUser({
+    email: input.email,
+    password: input.password,
+    email_confirm: true,
+    user_metadata: metadataFor(record),
+  })
+  if (error || !data.user) fail(error || { message: 'Could not create the account.' })
+  record.id = data.user.id
+  record.createdAt = data.user.created_at || pledgeAcceptedAt
+  await patchProfile(record)
+  return record
+}
+
+export async function registerGoogleUser(input: AccountInput & { googleSub: string }) {
+  const db = await load()
+  if (db.users.some((user) => user.email === input.email || user.googleSub === input.googleSub)) {
+    throw new HttpError(409, 'That Google account is already on Troless. Sign in instead.')
+  }
+  if (db.users.some((user) => user.handle === input.handle)) throw new HttpError(409, 'That handle is taken.')
+  const pledgeAcceptedAt = new Date().toISOString()
+  const record: UserRecord = {
+    id: '',
+    email: input.email,
+    passwordHash: null,
+    passwordSalt: null,
+    googleSub: input.googleSub,
+    displayName: input.displayName,
+    handle: input.handle,
+    bio: input.bio,
+    hue: input.hue,
+    pledgeAcceptedAt,
+    isAdmin: input.isAdmin ?? db.users.length === 0,
+    createdAt: pledgeAcceptedAt,
+  }
+  const { data, error } = await supabaseAdmin().auth.admin.createUser({
+    email: input.email,
+    email_confirm: true,
+    user_metadata: metadataFor(record),
+  })
+  if (error || !data.user) fail(error || { message: 'Could not create the account.' })
+  record.id = data.user.id
+  record.createdAt = data.user.created_at || pledgeAcceptedAt
+  await patchProfile(record)
+  return record
+}
+
+export async function authenticateEmail(email: string, password: string) {
+  const { data, error } = await supabaseAuth().auth.signInWithPassword({ email, password })
+  if (error || !data.user) {
+    const { data: listed } = await supabaseAdmin().auth.admin.listUsers({ page: 1, perPage: 200 })
+    const match = listed?.users.find((user) => user.email?.toLowerCase() === email)
+    if (match && typeof match.user_metadata?.googleSub === 'string') {
+      throw new HttpError(401, 'This account uses Google sign-in.')
+    }
+    throw new HttpError(401, 'That email and password don’t match.')
+  }
+  const { data: profile, error: profileError } = await supabaseAdmin().from('profiles').select('*').eq('id', data.user.id).maybeSingle()
+  if (profileError || !profile) throw new HttpError(500, 'Account missing.')
+  return userFromParts(profile as Row, data.user)
 }
 
 async function insert(table: string, rows: Row[]) {
   if (rows.length === 0) return
   const { error } = await supabaseAdmin().from(table).insert(rows)
   if (error) {
-    if (table === 'encouragements' && error.code === '23505') return
+    if (table === 'video_ratings' && error.code === '23505') return
     fail(error)
   }
 }
 
 async function persistDiff(before: Database, after: Database) {
-  const beforeUsers = new Set(before.users.map((user) => user.id))
-  await insert('users', after.users.filter((user) => !beforeUsers.has(user.id)).map(userToRow))
-
   for (const user of after.users) {
     const prev = before.users.find((item) => item.id === user.id)
     if (!prev || prev.googleSub === user.googleSub) continue
-    const { error } = await supabaseAdmin().from('users').update({ google_sub: user.googleSub }).eq('id', user.id)
-    if (error) fail(error)
+    const { data, error } = await supabaseAdmin().auth.admin.getUserById(user.id)
+    if (error || !data.user) fail(error || { message: 'Account missing.' })
+    const { error: updateError } = await supabaseAdmin().auth.admin.updateUserById(user.id, {
+      user_metadata: metadataFor(user, data.user.user_metadata || {}),
+    })
+    if (updateError) fail(updateError)
   }
 
   const beforeVideos = new Set(before.videos.map((video) => video.id))
@@ -156,20 +285,31 @@ async function persistDiff(before: Database, after: Database) {
       .map((video) => ({
         id: video.id,
         user_id: video.userId,
-        title: video.title,
-        filename: video.filename,
-        mime: video.mime,
-        duration_ms: video.durationMs,
+        video_url: video.filename,
+        duration_seconds: Math.max(1, Math.min(60, Math.round(video.durationMs / 1000))),
+        caption: video.title,
+        positivity_impact: 0,
+        total_ratings: 0,
+        rating_sum: 0,
+        view_count: 0,
+        status: 'published',
         created_at: video.createdAt,
+        updated_at: video.createdAt,
       }))
   )
 
   const encouraged = new Set(before.encouragements.map((item) => `${item.userId}:${item.videoId}`))
   await insert(
-    'encouragements',
+    'video_ratings',
     after.encouragements
       .filter((item) => !encouraged.has(`${item.userId}:${item.videoId}`))
-      .map((item) => ({ user_id: item.userId, video_id: item.videoId, created_at: item.createdAt }))
+      .map((item) => ({
+        id: randomUUID(),
+        user_id: item.userId,
+        video_id: item.videoId,
+        rating: 1,
+        created_at: item.createdAt,
+      }))
   )
 
   const beforeComments = new Set(before.comments.map((comment) => comment.id))
@@ -182,30 +322,34 @@ async function persistDiff(before: Database, after: Database) {
         video_id: comment.videoId,
         user_id: comment.userId,
         body: comment.body,
+        score: 0,
+        is_blurred: false,
         created_at: comment.createdAt,
+        updated_at: comment.createdAt,
       }))
   )
 
   const beforeReports = new Map(before.reports.map((report) => [report.id, report]))
   await insert(
-    'reports',
+    'notifications',
     after.reports
       .filter((report) => !beforeReports.has(report.id))
       .map((report) => ({
         id: report.id,
-        reporter_id: report.reporterId,
-        target_type: report.targetType,
-        target_id: report.targetId,
-        reason: report.reason,
+        user_id: report.reporterId,
+        type: 'report',
+        title: report.reason,
+        body: '',
+        reference_type: report.targetType,
+        reference_id: report.targetId,
+        read: Boolean(report.reviewedAt),
         created_at: report.createdAt,
-        reviewed_at: report.reviewedAt,
       }))
   )
-
   for (const report of after.reports) {
     const prev = beforeReports.get(report.id)
-    if (!prev || prev.reviewedAt === report.reviewedAt) continue
-    const { error } = await supabaseAdmin().from('reports').update({ reviewed_at: report.reviewedAt }).eq('id', report.id)
+    if (!prev || prev.reviewedAt === report.reviewedAt || !report.reviewedAt) continue
+    const { error } = await supabaseAdmin().from('notifications').update({ read: true }).eq('id', report.id)
     if (error) fail(error)
   }
 }

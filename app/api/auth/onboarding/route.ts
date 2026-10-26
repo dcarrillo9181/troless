@@ -2,7 +2,8 @@ import { randomUUID } from 'crypto'
 import { NextResponse } from 'next/server'
 import { readPending, sessionToken, toSessionUser, withSession } from '@/lib/auth'
 import { assertSameOrigin, handle, readJson } from '@/lib/http'
-import { findUserByEmail, findUserByHandle, update } from '@/lib/store'
+import { findUserByEmail, findUserByHandle, registerGoogleUser, update } from '@/lib/store'
+import { supabaseConfigured } from '@/lib/supabase'
 import type { UserRecord } from '@/lib/types'
 import { HttpError, hueFromHandle, parseHandle, parsePledge, requiredText } from '@/lib/validators'
 
@@ -16,7 +17,16 @@ export const POST = handle(async (request) => {
   const bio = requiredText(body.bio, 'Short bio', 160)
   parsePledge(body.pledge)
 
-  const user = await update<UserRecord>((db) => {
+  const user = supabaseConfigured()
+    ? await registerGoogleUser({
+        email: pending.email,
+        displayName,
+        handle: handleName,
+        bio,
+        hue: hueFromHandle(handleName),
+        googleSub: pending.sub,
+      })
+    : await update<UserRecord>((db) => {
     if (findUserByEmail(db, pending.email) || db.users.some((item) => item.googleSub === pending.sub)) {
       throw new HttpError(409, 'That Google account is already on Troless. Sign in instead.')
     }

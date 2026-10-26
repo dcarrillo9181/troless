@@ -2,7 +2,8 @@ import { randomUUID } from 'crypto'
 import { NextResponse } from 'next/server'
 import { hashPassword, sessionToken, toSessionUser, withSession } from '@/lib/auth'
 import { assertSameOrigin, handle, readJson } from '@/lib/http'
-import { findUserByEmail, findUserByHandle, update } from '@/lib/store'
+import { findUserByEmail, findUserByHandle, registerEmailUser, update } from '@/lib/store'
+import { supabaseConfigured } from '@/lib/supabase'
 import type { UserRecord } from '@/lib/types'
 import { HttpError, hueFromHandle, parseEmail, parseHandle, parsePassword, parsePledge, requiredText } from '@/lib/validators'
 
@@ -16,7 +17,16 @@ export const POST = handle(async (request) => {
   const bio = requiredText(body.bio, 'Short bio', 160)
   parsePledge(body.pledge)
 
-  const user = await update<UserRecord>((db) => {
+  const user = supabaseConfigured()
+    ? await registerEmailUser({
+        email,
+        password,
+        displayName,
+        handle: handleName,
+        bio,
+        hue: hueFromHandle(handleName),
+      })
+    : await update<UserRecord>((db) => {
     if (findUserByEmail(db, email)) throw new HttpError(409, 'An account with that email already exists.')
     if (findUserByHandle(db, handleName)) throw new HttpError(409, 'That handle is taken.')
     const { hash, salt } = hashPassword(password)

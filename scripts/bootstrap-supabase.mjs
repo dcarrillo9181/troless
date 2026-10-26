@@ -4,6 +4,26 @@ import { createClient } from '@supabase/supabase-js'
 import pg from 'pg'
 
 const ref = 'lhpvuvbmsnkfyndstebi'
+
+function loadEnvFile(file) {
+  if (!fs.existsSync(file)) return
+  for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const eq = trimmed.indexOf('=')
+    if (eq < 1) continue
+    const key = trimmed.slice(0, eq).trim()
+    let value = trimmed.slice(eq + 1).trim()
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1)
+    }
+    if (!process.env[key]) process.env[key] = value
+  }
+}
+
+loadEnvFile(path.join(process.cwd(), '.env'))
+loadEnvFile(path.join(process.cwd(), '.env.local'))
+
 const url = process.env.SUPABASE_URL || `https://${ref}.supabase.co`
 const sqlPath = path.join(process.cwd(), 'supabase/migrations/20261026193000_troless.sql')
 
@@ -142,6 +162,17 @@ const databaseUrl = connectionString()
 const accessToken = process.env.SUPABASE_ACCESS_TOKEN
 
 if (!databaseUrl && !accessToken) {
+  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (key) {
+    const response = await fetch(`${url}/rest/v1/profiles?select=id&limit=1`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}`, 'User-Agent': 'troless-server' },
+    })
+    if (response.ok) {
+      console.log('Supabase is already provisioned at', url)
+      console.log('Restart the dev server so it reads .env.local.')
+      process.exit(0)
+    }
+  }
   console.error(
     `Cannot create tables on ${url} yet. Add one of these to .env.local and run npm run db:bootstrap:\n` +
       '- SUPABASE_DB_PASSWORD (database password from the Supabase Connect panel)\n' +

@@ -13,6 +13,8 @@ import {
 import * as fileStore from './store-file'
 import * as remoteStore from './store-supabase'
 import { supabaseConfigured } from './supabase'
+
+export { registerEmailUser, registerGoogleUser, authenticateEmail } from './store-supabase'
 import type { Database, VideoRecord } from './types'
 
 function backend() {
