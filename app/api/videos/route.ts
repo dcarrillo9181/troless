@@ -1,12 +1,10 @@
 import { randomUUID } from 'crypto'
-import fs from 'fs'
-import path from 'path'
 import { NextResponse } from 'next/server'
 import { getSessionUser } from '@/lib/auth'
 import { MAX_VIDEO_BYTES, MAX_VIDEO_MS, MIN_VIDEO_MS } from '@/lib/constants'
 import { assertSameOrigin, handle } from '@/lib/http'
 import { presentFeed, presentVideo } from '@/lib/present'
-import { readDb, update, videoFilePath, videosDir } from '@/lib/store'
+import { readDb, removeVideoBytes, update, writeVideoBytes } from '@/lib/store'
 import type { VideoRecord } from '@/lib/types'
 import { HttpError, requiredText } from '@/lib/validators'
 
@@ -51,19 +49,17 @@ export const POST = handle(async (request) => {
     durationMs: Math.round(durationMs),
     createdAt: new Date().toISOString(),
   }
-  fs.mkdirSync(videosDir(), { recursive: true })
-  const filePath = path.join(videosDir(), filename)
-  fs.writeFileSync(filePath, bytes)
+  await writeVideoBytes(filename, bytes, mime)
   try {
     await update((db) => {
       db.videos.push(record)
     })
   } catch (error) {
-    fs.rmSync(filePath, { force: true })
+    await removeVideoBytes(filename)
     throw error
   }
   const db = await readDb()
   const video = presentVideo(db, id, user.id)
-  if (!video || !videoFilePath(record)) throw new HttpError(500, 'The video could not be saved.')
+  if (!video) throw new HttpError(500, 'The video could not be saved.')
   return NextResponse.json({ video })
 })

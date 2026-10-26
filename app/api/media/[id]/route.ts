@@ -1,6 +1,4 @@
-import fs from 'fs'
-import { Readable } from 'stream'
-import { videoFilePath, readDb } from '@/lib/store'
+import { readDb, readVideoBytes } from '@/lib/store'
 import { handle } from '@/lib/http'
 
 export const GET = handle(async (_request, { params }) => {
@@ -8,14 +6,12 @@ export const GET = handle(async (_request, { params }) => {
   const db = await readDb()
   const video = db.videos.find((item) => item.id === params.id)
   if (!video) return new Response('Not found', { status: 404 })
-  const file = videoFilePath(video)
-  if (!file || !fs.existsSync(file)) return new Response('Not found', { status: 404 })
-  const stat = fs.statSync(file)
-  const stream = Readable.toWeb(fs.createReadStream(file)) as ReadableStream
-  return new Response(stream, {
+  const bytes = await readVideoBytes(video)
+  if (!bytes) return new Response('Not found', { status: 404 })
+  return new Response(bytes, {
     headers: {
       'Content-Type': video.mime,
-      'Content-Length': String(stat.size),
+      'Content-Length': String(bytes.length),
       'Cache-Control': 'public, max-age=86400',
     },
   })
