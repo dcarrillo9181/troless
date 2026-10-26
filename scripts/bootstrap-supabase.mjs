@@ -11,7 +11,7 @@ function connectionString() {
   if (process.env.DATABASE_URL) return process.env.DATABASE_URL
   const password = process.env.SUPABASE_DB_PASSWORD
   if (!password) return ''
-  const host = process.env.SUPABASE_DB_HOST || 'aws-0-us-east-1.pooler.supabase.com'
+  const host = process.env.SUPABASE_DB_HOST || 'aws-1-us-east-1.pooler.supabase.com'
   const port = process.env.SUPABASE_DB_PORT || '5432'
   const user = encodeURIComponent(`postgres.${ref}`)
   return `postgresql://${user}:${encodeURIComponent(password)}@${host}:${port}/postgres`
