@@ -1,15 +1,12 @@
-'use client'
+import { Feed } from './components/Feed'
+import { getSessionUser } from '@/lib/auth'
+import { presentFeed } from '@/lib/present'
+import { readDb } from '@/lib/store'
 
-import { Inter } from 'next/font/google'
-import styles from './page.module.css'
-import  MainContent  from './components/MainContent'
+export const dynamic = 'force-dynamic'
 
-const inter = Inter({ subsets: ['latin'] })
-
-export default function Home() {
-  return (
-    <main className={styles.main}>
-      <MainContent topVideos={[]} trendingChallenges={[]} recentVideos={[]} />
-    </main>
-  )
+export default async function Home() {
+  const user = await getSessionUser()
+  const videos = presentFeed(await readDb(), user?.id ?? null)
+  return <Feed initialVideos={videos} signedIn={Boolean(user)} />
 }

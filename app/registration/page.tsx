@@ -1,7 +1,5 @@
-import React from 'react'
+import { redirect } from 'next/navigation'
 
-export default function Registration() {
-  return (
-    <div>Registration Page</div>
-  )
+export default function RegistrationRedirect() {
+  redirect('/join')
 }

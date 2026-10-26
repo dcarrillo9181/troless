@@ -1,37 +1,47 @@
-import React from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
+import type { SessionUser } from '@/lib/types'
+import { Logo } from './Logo'
+import { SignOutButton } from './SignOutButton'
 
-const Header: React.FC = () => {
+const item = 'rounded-full px-3 py-2 hover:bg-blush'
+
+export default function Header({ user, alerts }: { user: SessionUser | null; alerts: number }) {
   return (
-    <header className="bg-blue-400 shadow-md p-4">
-        <nav className="container mx-auto px-6 py-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <Link href="/">
-                  <Image
-                    src="/troless_full_logo.png"
-                    alt="Troless Logo"
-                    width={300} // Adjust the width as needed
-                    height={100} // Adjust the height as needed
-                    priority // Optional, to load the logo with higher priority
-                  />
-                </Link>
-              </div>
-              <div className="hidden md:flex items-center space-x-8 text-xl">
-                <a href="./top_videos" className="text-white hover:text-gray-600">Top Videos</a>
-                <a href="./challenges" className="text-white hover:text-gray-600">Challenges</a>
-                <a href="./conflict_resolution" className="text-white hover:text-gray-600">Conflict Resolution</a>
-              </div>
-              <div className="md:flex items-center space-x-4">
-                <input type="text" className="border-2 border-gray-300 rounded-md p-2" placeholder="Search" />
-                <button className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-colors duration-200 text-white rounded-md px-4 py-2">Sign In</button>
-                <button className="bg-gray-200 hover:bg-gray-300 active:bg-gray-500 transition-colors duration-200 text-gray-800 rounded-md px-4 py-2">Register</button>
-              </div>
-            </div>
+    <header className="z-40 w-full shrink-0 border-b border-line/80 bg-paper/95 backdrop-blur-md">
+      <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-2">
+        <a href="/" className="shrink-0 rounded-full" aria-label="Troless home">
+          <Logo />
+        </a>
+        <nav className="flex min-w-0 max-w-full flex-1 flex-wrap items-center justify-end gap-1 text-sm sm:gap-2">
+          <a href="/" className={item}>Feed</a>
+          <a href="/top_videos" className={item}>Top videos</a>
+          <a href="/challenges" className={item}>Challenges</a>
+          <a href="/conflict_resolution" className={item}>Resolve</a>
+          {user ? (
+            <a href="/record" className="rounded-full bg-sun px-3 py-2 font-semibold text-white hover:brightness-95">
+              Record
+            </a>
+          ) : null}
+          {user ? <a href={`/u/${user.handle}`} className={item}>Profile</a> : null}
+          {user?.isAdmin ? (
+            <a href="/admin" className={item}>
+              Reports
+              {alerts ? (
+                <span className="ml-1 inline-flex min-w-5 items-center justify-center rounded-full bg-berry px-1.5 text-xs font-semibold text-white">
+                  {alerts}
+                </span>
+              ) : null}
+            </a>
+          ) : null}
+          {user ? <SignOutButton /> : (
+            <>
+              <a href="/login" className={item}>Sign in</a>
+              <a href="/join" className="rounded-full bg-sun px-3 py-2 font-semibold text-white hover:brightness-95">
+                Join
+              </a>
+            </>
+          )}
         </nav>
+      </div>
     </header>
-  );
-};
-
-export default Header;
+  )
+}
