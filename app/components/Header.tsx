@@ -1,37 +1,35 @@
-import React from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
+import Link from 'next/link'
+import type { SessionUser } from '@/lib/types'
 
-const Header: React.FC = () => {
+export default function Header({ user, alerts }: { user: SessionUser | null; alerts: number }) {
+
   return (
-    <header className="bg-blue-400 shadow-md p-4">
-        <nav className="container mx-auto px-6 py-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <Link href="/">
-                  <Image
-                    src="/troless_full_logo.png"
-                    alt="Troless Logo"
-                    width={300} // Adjust the width as needed
-                    height={100} // Adjust the height as needed
-                    priority // Optional, to load the logo with higher priority
-                  />
-                </Link>
-              </div>
-              <div className="hidden md:flex items-center space-x-8 text-xl">
-                <a href="./top_videos" className="text-white hover:text-gray-600">Top Videos</a>
-                <a href="./challenges" className="text-white hover:text-gray-600">Challenges</a>
-                <a href="./conflict_resolution" className="text-white hover:text-gray-600">Conflict Resolution</a>
-              </div>
-              <div className="md:flex items-center space-x-4">
-                <input type="text" className="border-2 border-gray-300 rounded-md p-2" placeholder="Search" />
-                <button className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-colors duration-200 text-white rounded-md px-4 py-2">Sign In</button>
-                <button className="bg-gray-200 hover:bg-gray-300 active:bg-gray-500 transition-colors duration-200 text-gray-800 rounded-md px-4 py-2">Register</button>
-              </div>
-            </div>
-        </nav>
+    <header className="sticky top-0 z-20 flex min-h-16 flex-wrap items-center justify-between gap-2 bg-tide px-3 py-2 text-paper sm:px-4">
+      <Link href="/" className="shrink-0">
+        <img src="/troless_full_logo.png" alt="Troless" className="h-9 w-auto" />
+      </Link>
+      <nav className="flex flex-wrap items-center justify-end gap-1 text-sm sm:gap-4 sm:text-base">
+        <Link href="/" className="rounded-full px-2 py-1 hover:bg-white/10">Feed</Link>
+        {user ? <Link href="/record" className="rounded-full px-2 py-1 hover:bg-white/10">Record</Link> : null}
+        {user ? (
+          <Link href={`/u/${user.handle}`} className="rounded-full px-2 py-1 hover:bg-white/10">Profile</Link>
+        ) : null}
+        {user?.isAdmin ? (
+          <Link href="/admin" className="rounded-full px-2 py-1 hover:bg-white/10">
+            Reports{alerts ? ` (${alerts})` : ''}
+          </Link>
+        ) : null}
+        {user ? (
+          <form action="/api/auth/logout" method="post">
+            <button type="submit" className="rounded-full px-2 py-1 hover:bg-white/10">Sign out</button>
+          </form>
+        ) : (
+          <>
+            <Link href="/login" className="rounded-full px-2 py-1 hover:bg-white/10">Sign in</Link>
+            <Link href="/join" className="rounded-full bg-paper px-3 py-1 font-semibold text-ink">Join</Link>
+          </>
+        )}
+      </nav>
     </header>
-  );
-};
-
-export default Header;
+  )
+}
